@@ -1,0 +1,73 @@
+
+class Memory:
+    '''some RAM, but able to dump to file for hard drive'''
+    def __init__(self, size=0, initialData=None):
+        '''Initialize memory with a given size and optional initial data.'''
+        self.size = size
+        self.data = initialData if initialData is not None else [0] * size
+
+    def read(self, address):
+        '''Read a value from the specified address in memory.'''
+        if 0 <= address < self.size:
+            return self.data[address]
+        else:
+            raise IndexError("Address out of range")
+    def write(self, address, value):
+        '''Write a value to the specified address in memory.'''
+        if 0 <= address < self.size:
+            self.data[address] = (value)
+        else:
+            raise IndexError("Address out of range")
+    def filedump(self, filename):
+        '''Dump the memory contents to a file.'''
+        with open(filename, 'w') as f:
+            f.write(self.size)
+            for i in range(self.size):
+                f.write(f"{i}: {self.data[i]}\n")
+
+    def fileload(self, filename):
+        '''Load memory contents from a file.'''
+        with open(filename, 'r') as f:
+            self.size = int(f.readline().strip())
+            for line in f:
+                index, value = line.split(': ')
+                self.data[int(index)] = int(value.strip())
+    
+
+
+class genobj:
+    '''A generic object that can be used to store any data.'''
+    def __init__(self, input):
+        '''Initialize the object with input data.'''
+        self.data = str(input)
+        def __str__(self):
+            '''Return a string representation of the object.'''
+            return self.data
+        
+class Vector2D:
+    '''A simple 2d vector.'''
+    def __init__(self, x=0, y=0):
+        self.x = x
+        self.y = y
+
+    def __add__(self, other):
+        return Vector2D(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Vector2D(self.x - other.x, self.y - other.y)
+
+    def __mul__(self, scalar):
+        return Vector2D(self.x * scalar, self.y * scalar)
+
+    def __truediv__(self, scalar):
+        return Vector2D(self.x / scalar, self.y / scalar)
+
+    def __repr__(self):
+        return f"Vector2D({self.x}, {self.y})"
+    def dot(self, other):
+        '''Dot product of two vectors.'''
+        return self.x * other.x + self.y * other.y
+    def cross(self, other):
+        '''Cross product of two vectors.'''
+        return self.x * other.y - self.y * other.x
+    
