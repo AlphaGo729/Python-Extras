@@ -34,7 +34,7 @@ class Memory:
                 self.data[int(index)] = int(value.strip())
     
 
- 
+
 class genobj:
     '''A generic object that can be used to store any data.'''
     def __init__(self, input):
