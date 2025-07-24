@@ -39,10 +39,30 @@ class GenObj:
     def __init__(self, input):
         '''Initialize the object with input data.'''
         self.data = str(input)
-        def __str__(self):
-            '''Return a string representation of the object.'''
-            return self.data
-        
+    def __str__(self):
+        '''Return a string representation of the object.'''
+        return self.data
+    def change(self, count):
+        '''Change the data stored in the object.'''
+        try:
+            self.data = str(int(self.data) + count)
+        except ValueError:
+            return "Invalid data type for change operation"
+    def get(self):
+        '''Get the data stored in the object.'''
+        return self.data
+    def set(self, input):
+        '''Set the data stored in the object.'''
+        self.data = str(input)
+    
+class readonly:
+    '''A decorator to make a class read-only.'''
+    def __init__(self, val):
+        self.val = val
+    def __get__(self, instance, owner):
+        '''Get the value of the read-only attribute.'''
+        return self.val
+    
 class Vector2D:
     '''A simple 2d vector.'''
     def __init__(self, x=0, y=0):
