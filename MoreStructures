@@ -56,10 +56,10 @@ class GenObj:
         self.data = str(input)
     
 class readonly:
-    '''A decorator to make a class read-only.'''
+    '''A read-only datatype that can't be changed.'''
     def __init__(self, val):
         self.val = val
-    def __get__(self, instance, owner):
+    def getval(self):
         '''Get the value of the read-only attribute.'''
         return self.val
     
