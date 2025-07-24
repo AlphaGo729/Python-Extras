@@ -88,8 +88,10 @@ class Vector2D:
         return self.x * other.x + self.y * other.y
     def cross(self, other):
         '''Cross product of two vectors.'''
+        if not isinstance(other, Vector2D):
+            raise TypeError("Cross product is only defined between two Vector2D objects")
         return self.x * other.y - self.y * other.x
-
+    
 class Vector3D:
     '''A simple 3d vector.'''
     def __init__(self, x=0, y=0, z=0):
@@ -121,3 +123,92 @@ class Vector3D:
             self.z * other.x - self.x * other.z,
             self.x * other.y - self.y * other.x
         )
+
+class Vector:
+    '''A simple vector class that can be any dimension'''
+    def __init__(self, coord):
+        self.coord = coord
+        self.numcoord = len(coord)
+    def __add__(self, other):
+        if self.numcoord != other.numcoord:
+            raise ValueError("Vectors must have the same number of dimensions")
+        return Vector([self.coord[i] + other.coord[i] for i in range(self.numcoord)])
+    def __sub__(self, other):
+        if self.numcoord != other.numcoord:
+            raise ValueError("Vectors must have the same number of dimensions")
+        return Vector([self.coord[i] - other.coord[i] for i in range(self.numcoord)])
+    def __mul__(self, scalar):
+        return Vector([c * scalar for c in self.coord])
+    def __truediv__(self, scalar):
+        return Vector([c / scalar for c in self.coord])
+    def __repr__(self):
+        return self.coord
+    def dot(self, other):
+        if self.numcoord != other.numcoord:
+            raise ValueError("Vectors must have the same number of dimensions")
+        return sum(self.coord[i] * other.coord[i] for i in range(self.numcoord))
+    
+
+class Matrix:
+    '''A simple matrix class that can be any dimension'''
+    def __init__(self, rows):
+        self.rows = rows
+        self.numrows = len(rows)
+        self.numcols = len(rows[0]) if rows else 0
+
+    def __add__(self, other):
+        if self.numrows != other.numrows or self.numcols != other.numcols:
+            raise ValueError("Matrices must have the same dimensions")
+        return Matrix([[self.rows[i][j] + other.rows[i][j] for j in range(self.numcols)] for i in range(self.numrows)])
+
+    def __sub__(self, other):
+        if self.numrows != other.numrows or self.numcols != other.numcols:
+            raise ValueError("Matrices must have the same dimensions")
+        return Matrix([[self.rows[i][j] - other.rows[i][j] for j in range(self.numcols)] for i in range(self.numrows)])
+
+    def __mul__(self, scalar):
+        return Matrix([[c * scalar for c in row] for row in self.rows])
+
+    def __repr__(self):
+        return '\n'.join([' '.join(map(str, row)) for row in self.rows])
+    
+    def matmul(self, other):
+        if self.numcols != other.numrows:
+            raise ValueError("Number of columns in the first matrix must match number of rows in the second matrix")
+        return Matrix([[sum(self.rows[i][k] * other.rows[k][j] for k in range(self.numcols)) for j in range(other.numcols)] for i in range(self.numrows)])
+    def transpose(self):
+        return Matrix([[self.rows[j][i] for j in range(self.numrows)] for i in range(self.numcols)])
+    def determinant(self):
+        if self.numrows != self.numcols:
+            raise ValueError("Determinant is only defined for square matrices")
+        if self.numrows == 1:
+            return self.rows[0][0]
+        if self.numrows == 2:
+            return self.rows[0][0] * self.rows[1][1] - self.rows[0][1] * self.rows[1][0]
+        det = 0
+        for c in range(self.numcols):
+            submatrix = Matrix([row[:c] + row[c+1:] for row in self.rows[1:]])
+            det += ((-1) ** c) * self.rows[0][c] * submatrix.determinant()
+        return det
+    def inverse(self):
+        if self.numrows != self.numcols:
+            raise ValueError("Inverse is only defined for square matrices")
+        det = self.determinant()
+        if det == 0:
+            raise ValueError("Matrix is singular and cannot be inverted")
+        if self.numrows == 1:
+            return Matrix([[1 / self.rows[0][0]]])
+        cofactors = []
+        for i in range(self.numrows):
+            cofactor_row = []
+            for j in range(self.numcols):
+                submatrix = Matrix([row[:j] + row[j+1:] for row in (self.rows[:i] + self.rows[i+1:])])
+                cofactor_row.append(((-1) ** (i + j)) * submatrix.determinant())
+            cofactors.append(cofactor_row)
+        cofactors_transposed = Matrix(cofactors).transpose()
+        return cofactors_transposed * (1 / det)
+    def scalevector(self, vector):
+        if self.numcols != len(vector.coord):
+            raise ValueError("Matrix columns must match vector dimensions")
+        return Vector([sum(self.rows[i][j] * vector.coord[j] for j in range(self.numcols)) for i in range(self.numrows)])
+        
