@@ -35,7 +35,7 @@ class Memory:
     
 
 
-class genobj:
+class GenObj:
     '''A generic object that can be used to store any data.'''
     def __init__(self, input):
         '''Initialize the object with input data.'''
