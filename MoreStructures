@@ -747,4 +747,81 @@ class Calculator:
                     new_grid[i][j] = (grid[i + 1][j] + grid[i - 1][j] + grid[i][j + 1] + grid[i][j - 1]) / 4
             grid = new_grid
         return grid
+    def solve_linear_programming(self, c, A, b):
+        '''Solve a linear programming problem using the simplex method.'''
+        from scipy.optimize import linprog
+        res = linprog(c, A_ub=A, b_ub=b)
+        if res.success:
+            return res.x, res.fun
+        else:
+            return "No solution found"
+    def find_inverse_modulo(self, a, m):
+        '''Find the modular inverse of a under modulo m using the Extended Euclidean Algorithm.'''
+        def extended_gcd(a, b):
+            if a == 0:
+                return b, 0, 1
+            gcd, x1, y1 = extended_gcd(b % a, a)
+            x = y1 - (b // a) * x1
+            y = x1
+            return gcd, x, y
+        
+        gcd, x, _ = extended_gcd(a, m)
+        if gcd != 1:
+            raise ValueError("Inverse does not exist")
+        else:
+            return x % m
+    def solve_diophantine(self, a, b, c):
+        '''Solve a linear Diophantine equation ax + by = c.'''
+        def extended_gcd(a, b):
+            if a == 0:
+                return b, 0, 1
+            gcd, x1, y1 = extended_gcd(b % a, a)
+            x = y1 - (b // a) * x1
+            y = x1
+            return gcd, x, y
+        
+        gcd, x0, y0 = extended_gcd(a, b)
+        if c % gcd != 0:
+            return "No integer solutions exist"
+        else:
+            x0 *= c // gcd
+            y0 *= c // gcd
+            return x0, y0
+    def base_conv(self,number,base1,base2):
+        '''Convert a number from base1 to base2.'''
+        if base1 < 2 or base2 < 2:
+            raise ValueError("Base must be at least 2")
+        if isinstance(number, str):
+            number = int(number, base1)
+        elif not isinstance(number, int):
+            raise TypeError("Number must be an integer or a string representing an integer")
+        if number < 0:
+            raise ValueError("Number must be non-negative")
+        
+        if number == 0:
+            return '0'
+        
+        digits = []
+        while number > 0:
+            digits.append(str(number % base2))
+            number //= base2
+        return ''.join(digits[::-1])
     
+    def logicgates(self,inputs,gate):
+        '''Simulate basic logic gates.'''
+        if gate == 'AND':
+            return all(inputs)
+        elif gate == 'OR':
+            return any(inputs)
+        elif gate == 'NOT':
+            return [not (inputs[i]) for i in range(len(inputs))]
+        elif gate == 'NAND':
+            return not all(inputs)
+        elif gate == 'NOR':
+            return not any(inputs)
+        elif gate == 'XOR':
+            return inputs[0] != inputs[1]
+        elif gate == 'XNOR':
+            return inputs[0] == inputs[1]
+        else:
+            raise ValueError("Unsupported gate type")
