@@ -825,3 +825,86 @@ class Calculator:
             return inputs[0] == inputs[1]
         else:
             raise ValueError("Unsupported gate type")
+    def set_precision(self, precision):
+        '''Set the precision for floating-point calculations.'''
+        import decimal
+        decimal.getcontext().prec = precision
+    def additive_inverse(self, a):
+        '''Calculate the additive inverse of a number.'''
+        return -a
+    def multiplicative_inverse(self, a):
+        '''Calculate the multiplicative inverse of a number.'''
+        if a == 0:
+            raise ValueError("Multiplicative inverse is undefined for zero")
+        return 1 / a
+    def absolute_value(self, a):
+        '''Calculate the absolute value of a number.'''
+        return abs(a)
+    def signum(self, a):
+        '''Calculate the signum function of a number.'''
+        if a > 0:
+            return 1
+        elif a < 0:
+            return -1
+        else:
+            return 0
+    def floor(self, a):
+        '''Calculate the floor of a number.'''
+        import math
+        return math.floor(a)
+    def ceil(self, a):
+        '''Calculate the ceiling of a number.'''
+        import math
+        return math.ceil(a)
+    def round(self, a, ndigits=0):
+        '''Round a number to a specified number of decimal places.'''
+        import math
+        return round(a, ndigits)
+    
+
+
+
+
+class Complex:
+    '''A simple complex number class.'''
+    def __init__(self, real=0, imag=0):
+        self.real = real
+        self.imag = imag
+    
+    def __eq__(self, other):
+        return self.real == other.real and self.imag == other.imag
+    
+    def __str__(self):
+        return f"{self.real} + {self.imag}i" if self.imag >= 0 else f"{self.real} - {-self.imag}i"
+
+    def __add__(self, other):
+        return Complex(self.real + other.real, self.imag + other.imag)
+
+    def __sub__(self, other):
+        return Complex(self.real - other.real, self.imag - other.imag)
+
+    def __mul__(self, other):
+        return Complex(
+            self.real * other.real - self.imag * other.imag,
+            self.real * other.imag + self.imag * other.real
+        )
+
+    def __truediv__(self, other):
+        denom = other.real**2 + other.imag**2
+        if denom == 0:
+            raise ZeroDivisionError("Division by zero in complex division")
+        return Complex(
+            (self.real * other.real + self.imag * other.imag) / denom,
+            (self.imag * other.real - self.real * other.imag) / denom
+        )
+
+    def __repr__(self):
+        return f"Complex({self.real}, {self.imag})"
+    
+    def conjugate(self):
+        '''Return the complex conjugate.'''
+        return Complex(self.real, -self.imag)
+    
+    def modulus(self):
+        '''Return the modulus of the complex number.'''
+        return (self.real**2 + self.imag**2)**0.5
