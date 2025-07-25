@@ -921,3 +921,101 @@ class Complex:
 
 
 
+class Time:
+    '''A simple time class that can handle hours, minutes, and seconds.'''
+    def __init__(self, hours=0, minutes=0, seconds=0):
+        self.hours = hours
+        self.minutes = minutes
+        self.seconds = seconds
+        self.normalize()
+
+    def normalize(self):
+        '''Normalize the time to ensure valid values.'''
+        if self.seconds >= 60:
+            self.minutes += self.seconds // 60
+            self.seconds %= 60
+        if self.minutes >= 60:
+            self.hours += self.minutes // 60
+            self.minutes %= 60
+        if self.hours < 0 or self.minutes < 0 or self.seconds < 0:
+            raise ValueError("Time cannot be negative")
+    
+    def __str__(self):
+        return f"{self.hours:02}:{self.minutes:02}:{self.seconds:02}"
+    
+    def __add__(self, other):
+        return Time(
+            self.hours + other.hours,
+            self.minutes + other.minutes,
+            self.seconds + other.seconds
+        )
+    
+    def __sub__(self, other):
+        return Time(
+            self.hours - other.hours,
+            self.minutes - other.minutes,
+            self.seconds - other.seconds
+        )
+    def __mul__(self, scalar):
+        total_seconds = self.to_seconds() * scalar
+        return Time.from_seconds(total_seconds)
+    def __truediv__(self, scalar):
+        if scalar == 0:
+            raise ValueError("Cannot divide by zero")
+        total_seconds = self.to_seconds() / scalar
+        return Time.from_seconds(total_seconds)
+    def to_seconds(self):
+        '''Convert the time to total seconds.'''
+        return self.hours * 3600 + self.minutes * 60 + self.seconds
+    @classmethod
+    def from_seconds(cls, total_seconds):
+        '''Create a Time object from total seconds.'''
+        if total_seconds < 0:
+            raise ValueError("Total seconds cannot be negative")
+        hours = total_seconds // 3600
+        total_seconds %= 3600
+        minutes = total_seconds // 60
+        seconds = total_seconds % 60
+        return cls(hours, minutes, seconds)
+    def to_minutes(self):
+        '''Convert the time to total minutes.'''
+        return self.hours * 60 + self.minutes + self.seconds / 60
+    @classmethod
+    def from_minutes(cls, total_minutes):
+        '''Create a Time object from total minutes.'''
+        if total_minutes < 0:
+            raise ValueError("Total minutes cannot be negative")
+        hours = total_minutes // 60
+        minutes = total_minutes % 60
+        return cls(hours, minutes, 0)
+    def to_hours(self):
+        '''Convert the time to total hours.'''
+        return self.hours + self.minutes / 60 + self.seconds / 3600
+    @classmethod
+    def from_hours(cls, total_hours):
+        '''Create a Time object from total hours.'''
+        if total_hours < 0:
+            raise ValueError("Total hours cannot be negative")
+        hours = int(total_hours)
+        minutes = int((total_hours - hours) * 60)
+        seconds = int(((total_hours - hours) * 60 - minutes) * 60)
+        return cls(hours, minutes, seconds)
+    def to_string(self):
+        '''Return the time as a formatted string.'''
+        return f"{self.hours:02}:{self.minutes:02}:{self.seconds:02}"
+    @classmethod
+    def from_string(cls, time_str):
+        '''Create a Time object from a formatted string.'''
+        parts = time_str.split(':')
+        if len(parts) != 3:
+            raise ValueError("Time string must be in the format HH:MM:SS")
+        hours, minutes, seconds = map(int, parts)
+        return cls(hours, minutes, seconds)
+    def get_current_time(self):
+        '''Get the current time as a Time object.'''
+        from datetime import datetime
+        now = datetime.now()
+        return Time(now.hour, now.minute, now.second)
+    
+    
+    
