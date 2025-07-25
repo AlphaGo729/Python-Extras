@@ -860,6 +860,15 @@ class Calculator:
         '''Round a number to a specified number of decimal places.'''
         import math
         return round(a, ndigits)
+    def find_roots_of_unity(self, n):
+        '''Find the nth roots of unity.'''
+        if n <= 0:
+            raise ValueError("n must be a positive integer")
+        roots = []
+        for k in range(n):
+            angle = 2 * 3.141592653589793 * k / n
+            roots.append(Complex(math.cos(angle), math.sin(angle)))
+        return roots
     
 
 
