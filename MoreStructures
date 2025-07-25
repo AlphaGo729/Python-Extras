@@ -574,4 +574,177 @@ class Calculator:
                 else:
                     dp[i][j] = dp[i - 1][j]
         return dp[n][target]
+    def is_square_free(self, n):
+        '''Check if a number is square-free.'''
+        if n < 1:
+            return False
+        for i in range(2, int(n**0.5) + 1):
+            if n % (i * i) == 0:
+                return False
+        return True
+    def is_circular_prime(self, n):
+        '''Check if a number is a circular prime.'''
+        if n < 2:
+            return False
+        str_n = str(n)
+        for i in range(len(str_n)):
+            rotated = int(str_n[i:] + str_n[:i])
+            if not self.is_prime(rotated):
+                return False
+        return True
+    def is_truncatable_prime(self, n):
+        '''Check if a number is a truncatable prime.'''
+        if n < 10:
+            return False
+        str_n = str(n)
+        for i in range(len(str_n)):
+            if not self.is_prime(int(str_n[i:])) or not self.is_prime(int(str_n[:i + 1])):
+                return False
+        return True
+    def is_lychrel(self, n, max_iterations=50):
+        '''Check if a number is a Lychrel number.'''
+        if n < 0:
+            return False
+        for _ in range(max_iterations):
+            n += int(str(n)[::-1])
+            if self.is_palindrome(str(n)):
+                return False
+        return True
+    def is_narcissistic(self, n):
+        '''Check if a number is a narcissistic number.'''
+        digits = str(n)
+        num_digits = len(digits)
+        return sum(int(digit) ** num_digits for digit in digits) == n
+    def is_smith(self, n):
+        '''Check if a number is a Smith number.'''
+        if n < 2 or self.is_prime(n):
+            return False
+        digit_sum = sum(int(digit) for digit in str(n))
+        prime_factor_sum = sum(self.prime_factors(n))
+        return digit_sum == prime_factor_sum
+    def is_automorphic(self, n):
+        '''Check if a number is an automorphic number.'''
+        square = n * n
+        return str(square).endswith(str(n))
+    def is_pandigital(self, n):
+        '''Check if a number is pandigital.'''
+        digits = str(n)
+        return set(digits) == set(str(i) for i in range(len(digits))) and len(digits) == len(set(digits))
+    def is_fascinating(self, n):
+        '''Check if a number is fascinating.'''
+        if n < 100:
+            return False
+        concatenated = str(n) + str(n * 2) + str(n * 3)
+        return set(concatenated) == set('123456789') and len(concatenated) == 9
+    def is_harshad(self, n):
+        '''Check if a number is a Harshad number.'''
+        if n <= 0:
+            return False
+        digit_sum = sum(int(digit) for digit in str(n))
+        return n % digit_sum == 0
+    def is_kaprekar(self, n):
+        '''Check if a number is a Kaprekar number.'''
+        if n < 0:
+            return False
+        square = n * n
+        str_square = str(square)
+        d = len(str(n))
+        left_part = int(str_square[:-d]) if str_square[:-d] else 0
+        right_part = int(str_square[-d:])
+        return left_part + right_part == n
+    def is_amicable(self, a, b):
+        '''Check if two numbers are amicable.'''
+        def sum_of_divisors(n):
+            return sum(i for i in range(1, n) if n % i == 0)
+        return sum_of_divisors(a) == b and sum_of_divisors(b) == a and a != b
+    def derivative(self, func, x, h=1e-5):
+        '''Calculate the derivative of a function at a point x using finite difference.'''
+        return (func(x + h) - func(x - h)) / (2 * h)
+    def integral(self, func, a, b, n=1000):
+        '''Calculate the definite integral of a function from a to b using the trapezoidal rule.'''
+        h = (b - a) / n
+        integral_value = 0.5 * (func(a) + func(b))
+        for i in range(1, n):
+            integral_value += func(a + i * h)
+        return integral_value * h
+    def solve_quadratic(self, a, b, c):
+        '''Solve a quadratic equation ax^2 + bx + c = 0.'''
+        if a == 0:
+            raise ValueError("Coefficient 'a' cannot be zero")
+        discriminant = b**2 - 4 * a * c
+        if discriminant < 0:
+            return None
+        elif discriminant == 0:
+            return -b / (2 * a)
+        else:
+            root1 = (-b + discriminant**0.5) / (2 * a)
+            root2 = (-b - discriminant**0.5) / (2 * a)
+            return (root1, root2)
+    def solve_linear(self, a, b):
+        '''Solve a linear equation ax + b = 0.'''
+        if a == 0:
+            raise ValueError("Coefficient 'a' cannot be zero")
+        return -b / a
+    def solve_system_of_equations(self, equations):
+        '''Solve a system of linear equations using matrix methods.'''
+        import numpy as np
+        A = np.array([[eq[0] for eq in equations], [eq[1] for eq in equations]])
+        b = np.array([eq[2] for eq in equations])
+        try:
+            return np.linalg.solve(A, b)
+        except np.linalg.LinAlgError:
+            return "No unique solution exists"
+    def solve_polynomial(self, coefficients):
+        '''Solve a polynomial equation with given coefficients.'''
+        import numpy as np
+        return np.roots(coefficients)
+    def solve_differential_equation(self, func, y0, t0, t1, n=1000):
+        '''Solve a first-order differential equation using Euler's method.'''
+        h = (t1 - t0) / n
+        t = t0
+        y = y0
+        results = [(t, y)]
+        for _ in range(n):
+            y += h * func(t, y)
+            t += h
+            results.append((t, y))
+        return results
+    def solve_ode(self, func, y0, t0, t1, n=1000):
+        '''Solve an ordinary differential equation using the Runge-Kutta method.'''
+        h = (t1 - t0) / n
+        t = t0
+        y = y0
+        results = [(t, y)]
+        
+        for _ in range(n):
+            k1 = h * func(t, y)
+            k2 = h * func(t + h / 2, y + k1 / 2)
+            k3 = h * func(t + h / 2, y + k2 / 2)
+            k4 = h * func(t + h, y + k3)
+            y += (k1 + 2 * k2 + 2 * k3 + k4) / 6
+            t += h
+            results.append((t, y))
+        
+        return results
+    def solve_pde(self, func, x0, x1, y0, y1, n=100, m=100):
+        '''Solve a partial differential equation using finite difference method.'''
+        import numpy as np
+        x = np.linspace(x0, x1, n)
+        y = np.linspace(y0, y1, m)
+        dx = (x1 - x0) / (n - 1)
+        dy = (y1 - y0) / (m - 1)
+        
+        grid = np.zeros((n, m))
+        
+        for i in range(n):
+            for j in range(m):
+                grid[i][j] = func(x[i], y[j])
+        
+        for _ in range(100):
+            new_grid = grid.copy()
+            for i in range(1, n - 1):
+                for j in range(1, m - 1):
+                    new_grid[i][j] = (grid[i + 1][j] + grid[i - 1][j] + grid[i][j + 1] + grid[i][j - 1]) / 4
+            grid = new_grid
+        return grid
     
