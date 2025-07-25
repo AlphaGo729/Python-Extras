@@ -212,3 +212,366 @@ class Matrix:
             raise ValueError("Matrix columns must match vector dimensions")
         return Vector([sum(self.rows[i][j] * vector.coord[j] for j in range(self.numcols)) for i in range(self.numrows)])
         
+
+class Calculator:
+    '''A simple calculator class that can perform basic arithmetic operations.'''
+    def __init__(self):
+        self.memory = 0
+
+    def add(self, a, b):
+        return a + b
+
+    def subtract(self, a, b):
+        return a - b
+
+    def multiply(self, a, b):
+        return a * b
+
+    def truediv(self, a, b):
+        if b == 0:
+            raise ValueError("Cannot divide by zero")
+        return a / b
+
+    def set_memory(self, value):
+        self.memory = value
+
+    def get_memory(self):
+        return self.memory
+    def clear_memory(self):
+        self.memory = 0
+    def evalcalc(self, expression):
+        '''Evaluate a mathematical expression.'''
+        try:
+            return eval(expression)
+        except Exception as e:
+            return f"Error evaluating expression: {e}"
+    def factorial(self, n):
+        '''Calculate the factorial of a number.'''
+        if n < 0:
+            raise ValueError("Factorial is not defined for negative numbers")
+        if n == 0 or n == 1:
+            return 1
+        result = 1
+        for i in range(2, n + 1):
+            result *= i
+        return result
+    def power(self, base, exponent):
+        '''Calculate the power of a number.'''
+        return base ** exponent
+    def rootf(self, base, root=2):
+        '''Calculate the nth root of a number.'''
+        if root == 0:
+            raise ValueError("Cannot calculate the root with zero")
+        return base ** (1 / root)
+    def logarithm(self, value, base=10):
+        '''Calculate the logarithm of a number.'''
+        if value <= 0:
+            raise ValueError("Logarithm is not defined for non-positive values")
+        if base <= 1:
+            raise ValueError("Base must be greater than 1")
+        import math
+        return math.log(value, base)
+    def gcd2(self, a, b):
+        '''Calculate the greatest common divisor of two numbers.'''
+        while b:
+            a, b = b, a % b
+        return abs(a)
+    def lcm2(self, a, b):
+        '''Calculate the least common multiple of two numbers.'''
+        if a == 0 or b == 0:
+            return 0
+        return abs(a * b) // self.gcd2(a, b)
+    def gcd(self, *args):
+        '''Calculate the greatest common divisor of multiple numbers.'''
+        if len(args) < 2:
+            raise ValueError("At least two numbers are required")
+        gcd_value = args[0]
+        for num in args[1:]:
+            gcd_value = self.gcd2(gcd_value, num)
+        return gcd_value
+    def lcm(self, *args):
+        '''Calculate the least common multiple of multiple numbers.'''
+        if len(args) < 2:
+            raise ValueError("At least two numbers are required")
+        lcm_value = args[0]
+        for num in args[1:]:
+            lcm_value = self.lcm2(lcm_value, num)
+        return lcm_value
+    def is_prime(self, n):
+        '''Check if a number is prime.'''
+        if n <= 1:
+            return False
+        for i in range(2, int(n**0.5) + 1):
+            if n % i == 0:
+                return False
+        return True
+    def prime_factors(self, n):
+        '''Find the prime factors of a number.'''
+        if n <= 1:
+            return []
+        factors = []
+        for i in range(2, int(n**0.5) + 1):
+            while n % i == 0:
+                factors.append(i)
+                n //= i
+        if n > 1:
+            factors.append(n)
+        return factors
+    def fibonacci(self, n):
+        '''Generate Fibonacci sequence up to n terms.'''
+        if n <= 0:
+            return []
+        fib_sequence = [0, 1]
+        while len(fib_sequence) < n:
+            fib_sequence.append(fib_sequence[-1] + fib_sequence[-2])
+        return fib_sequence[n]
+    def recurrence(self, n, base_cases, recurrence_func_str):
+        memo = dict(base_cases)
+        results = []
+
+        def helper(k):
+            if k in memo:
+                return memo[k]
+            memo[k] = eval(recurrence_func_str, {"k": k, "f": helper})
+            return memo[k]
+
+        for i in range(n + 1):
+            results.append(helper(i))
+
+        return results
+    def sin(self, angle):
+        '''Calculate the sine of an angle in degrees.'''
+        import math
+        return math.sin(math.radians(angle))
+    def cos(self, angle):
+        '''Calculate the cosine of an angle in degrees.'''
+        import math
+        return math.cos(math.radians(angle))
+    def tan(self, angle):
+        '''Calculate the tangent of an angle in degrees.'''
+        import math
+        return math.tan(math.radians(angle))
+    def asin(self, value):
+        '''Calculate the arcsine of a value.'''
+        import math
+        if -1 <= value <= 1:
+            return math.degrees(math.asin(value))
+        else:
+            raise ValueError("Value must be in the range [-1, 1]")
+    def acos(self, value):
+        '''Calculate the arccosine of a value.'''
+        import math
+        if -1 <= value <= 1:
+            return math.degrees(math.acos(value))
+        else:
+            raise ValueError("Value must be in the range [-1, 1]")
+    def atan(self, value):
+        '''Calculate the arctangent of a value.'''
+        import math
+        return math.degrees(math.atan(value))
+    def atan2(self, y, x):
+        '''Calculate the arctangent of y/x, handling the quadrant correctly.'''
+        import math
+        return math.degrees(math.atan2(y, x))
+    def sec(self, angle):
+        '''Calculate the secant of an angle in degrees.'''
+        import math
+        if self.cos(angle) == 0:
+            raise ValueError("Secant is undefined for angles where cosine is zero")
+        return 1 / self.cos(angle)
+    def csc(self, angle):
+        '''Calculate the cosecant of an angle in degrees.'''
+        import math
+        if self.sin(angle) == 0:
+            raise ValueError("Cosecant is undefined for angles where sine is zero")
+        return 1 / self.sin(angle)
+    def cot(self, angle):
+        '''Calculate the cotangent of an angle in degrees.'''
+        import math
+        if self.tan(angle) == 0:
+            raise ValueError("Cotangent is undefined for angles where tangent is zero")
+        return 1 / self.tan(angle)
+    def secant(self, angle):
+        '''Calculate the secant of an angle in degrees.'''
+        import math
+        if self.cos(angle) == 0:
+            raise ValueError("Secant is undefined for angles where cosine is zero")
+        return 1 / self.cos(angle)
+    def cosecant(self, angle):
+        '''Calculate the cosecant of an angle in degrees.'''
+        import math
+        if self.sin(angle) == 0:
+            raise ValueError("Cosecant is undefined for angles where sine is zero")
+        return 1 / self.sin(angle)
+    def cotangent(self, angle):
+        '''Calculate the cotangent of an angle in degrees.'''
+        import math
+        if self.tan(angle) == 0:
+            raise ValueError("Cotangent is undefined for angles where tangent is zero")
+        return 1 / self.tan(angle)
+    def hyperbolic_sine(self, x):
+        '''Calculate the hyperbolic sine of x.'''
+        import math
+        return (math.exp(x) - math.exp(-x)) / 2
+    def hyperbolic_cosine(self, x):
+        '''Calculate the hyperbolic cosine of x.'''
+        import math
+        return (math.exp(x) + math.exp(-x)) / 2
+    def hyperbolic_tangent(self, x):
+        '''Calculate the hyperbolic tangent of x.'''
+        import math
+        return self.hyperbolic_sine(x) / self.hyperbolic_cosine(x)
+    def hyperbolic_arcsine(self, x):
+        '''Calculate the hyperbolic arcsine of x.'''
+        import math
+        return math.log(x + math.sqrt(x**2 + 1))
+    def hyperbolic_arccosine(self, x):
+        '''Calculate the hyperbolic arccosine of x.'''
+        import math
+        if x < 1:
+            raise ValueError("Value must be greater than or equal to 1")
+        return math.log(x + math.sqrt(x**2 - 1))
+    def hyperbolic_arctangent(self, x):
+        '''Calculate the hyperbolic arctangent of x.'''
+        import math
+        if abs(x) >= 1:
+            raise ValueError("Value must be in the range (-1, 1)")
+        return 0.5 * math.log((1 + x) / (1 - x))
+    def hyperbolic_arccosecant(self, x):
+        '''Calculate the hyperbolic arccosecant of x.'''
+        import math
+        if abs(x) < 1:
+            raise ValueError("Value must be greater than or equal to 1 or less than or equal to -1")
+        return math.log(math.sqrt(x**2 + 1) + x)
+    def hyperbolic_arcsecant(self, x):
+        '''Calculate the hyperbolic arcsecant of x.'''
+        import math
+        if abs(x) < 1:
+            raise ValueError("Value must be greater than or equal to 1 or less than or equal to -1")
+        return math.log(math.sqrt(x**2 - 1) + x)
+    def hyperbolic_arccotangent(self, x):
+        '''Calculate the hyperbolic arccotangent of x.'''
+        import math
+        if x == 0:
+            raise ValueError("Value cannot be zero")
+        return 0.5 * math.log((x + 1) / (x - 1))
+    def hyperbolic_secant(self, x):
+        '''Calculate the hyperbolic secant of x.'''
+        import math
+        return 2 / (math.exp(x) + math.exp(-x))
+    def hyperbolic_cosecant(self, x):
+        '''Calculate the hyperbolic cosecant of x.'''
+        import math
+        if self.hyperbolic_sine(x) == 0:
+            raise ValueError("Hyperbolic cosecant is undefined for x where hyperbolic sine is zero")
+        return 2 / (math.exp(x) - math.exp(-x))
+    def hyperbolic_cotangent(self, x):
+        '''Calculate the hyperbolic cotangent of x.'''
+        import math
+        if self.hyperbolic_sine(x) == 0:
+            raise ValueError("Hyperbolic cotangent is undefined for x where hyperbolic sine is zero")
+        return self.hyperbolic_cosine(x) / self.hyperbolic_sine(x)
+    def comparator(self, a, b):
+        '''Compare two values and return -1, 0, or 1.'''
+        if a < b:
+            return -1
+        elif a > b:
+            return 1
+        else:
+            return 0
+    def is_even(self, n):
+        '''Check if a number is even.'''
+        return n % 2 == 0
+    def is_odd(self, n):
+        '''Check if a number is odd.'''
+        return n % 2 != 0
+    def is_palindrome(self, s):
+        '''Check if a string is a palindrome.'''
+        s = s.lower().replace(" ", "")
+        return s == s[::-1]
+    def is_anagram(self, s1, s2):
+        '''Check if two strings are anagrams of each other.'''
+        s1 = s1.lower().replace(" ", "")
+        s2 = s2.lower().replace(" ", "")
+        return sorted(s1) == sorted(s2)
+    def is_substring(self, s1, s2):
+        '''Check if s1 is a substring of s2.'''
+        return s1 in s2
+    def is_prime_factor(self, n, factor):
+        '''Check if a number is a prime factor of another number.'''
+        if n <= 1 or factor <= 1:
+            return False
+        if n % factor != 0:
+            return False
+        for i in range(2, int(factor**0.5) + 1):
+            if factor % i == 0:
+                return False
+        return True
+    def is_perfect_square(self, n):
+        '''Check if a number is a perfect square.'''
+        if n < 0:
+            return False
+        root = int(n**0.5)
+        return root * root == n
+    def is_fibonacci(self, n):
+        '''Check if a number is a Fibonacci number.'''
+        if n < 0:
+            return False
+        a, b = 0, 1
+        while a < n:
+            a, b = b, a + b
+        return a == n
+    def is_perfect_number(self, n):
+        '''Check if a number is a perfect number.'''
+        if n <= 0:
+            return False
+        divisors_sum = sum(i for i in range(1, n) if n % i == 0)
+        return divisors_sum == n
+    def is_perfect_power(self, n,power=2):
+        '''Check if a number is a perfect power.'''
+        if n < 1:
+            return False
+        for base in range(2, int(n**0.5) + 1):
+            power = 2
+            while base ** power <= n:
+                if base ** power == n:
+                    return True
+                power += 1
+        return False
+    def is_armstrong(self, n):
+        '''Check if a number is an Armstrong number.'''
+        digits = str(n)
+        num_digits = len(digits)
+        return sum(int(digit) ** num_digits for digit in digits) == n
+    def is_abundant(self, n):
+        '''Check if a number is an abundant number.'''
+        if n <= 0:
+            return False
+        divisors_sum = sum(i for i in range(1, n) if n % i == 0)
+        return divisors_sum > n
+    def is_deficient(self, n):
+        '''Check if a number is a deficient number.'''
+        if n <= 0:
+            return False
+        divisors_sum = sum(i for i in range(1, n) if n % i == 0)
+        return divisors_sum < n
+    def is_semiperfect(self, n):
+        '''Check if a number is a semiperfect number.'''
+        if n <= 0:
+            return False
+        divisors = [i for i in range(1, n) if n % i == 0]
+        return self.is_subset_sum(divisors, n)
+    def is_subset_sum(self, nums, target):
+        '''Check if there is a subset of nums that sums to target.'''
+        n = len(nums)
+        dp = [[False] * (target + 1) for _ in range(n + 1)]
+        for i in range(n + 1):
+            dp[i][0] = True
+        for i in range(1, n + 1):
+            for j in range(1, target + 1):
+                if nums[i - 1] <= j:
+                    dp[i][j] = dp[i - 1][j] or dp[i - 1][j - nums[i - 1]]
+                else:
+                    dp[i][j] = dp[i - 1][j]
+        return dp[n][target]
+    
