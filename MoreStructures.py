@@ -897,6 +897,35 @@ class Calculator:
             prime_factors.append(n)
             powers.append(1)
         return dict(zip(prime_factors, powers))
+    def catalan_numbers(self, n):
+        '''Calculate the nth Catalan number.'''
+        if n < 0:
+            raise ValueError("n must be a non-negative integer")
+        return self.binomial_coefficient(2 * n, n) // (n + 1)
+    def lucas_numbers(self, n):
+        '''Calculate the nth Lucas number.'''
+        if n < 0:
+            raise ValueError("n must be a non-negative integer")
+        if n == 0:
+            return 2
+        elif n == 1:
+            return 1
+        else:
+            a, b = 2, 1
+            for _ in range(2, n + 1):
+                a, b = b, a + b
+            return b
+    def bell_numbers(self, n):
+        '''Calculate the nth Bell number.'''
+        if n < 0:
+            raise ValueError("n must be a non-negative integer")
+        bell = [[0] * (n + 1) for _ in range(n + 1)]
+        bell[0][0] = 1
+        for i in range(1, n + 1):
+            bell[i][0] = bell[i - 1][i - 1]
+            for j in range(1, i + 1):
+                bell[i][j] = bell[i - 1][j - 1] + bell[i][j - 1]
+        return bell[n][0]
     
 
 
