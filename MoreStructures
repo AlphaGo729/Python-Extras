@@ -1,3 +1,12 @@
+'''
+Note to self...
+check class Calculator - prime_factorization function to see if it works correctly.
+
+
+
+'''
+
+
 class Memory:
     '''some RAM, but able to dump to file for hard drive'''
     def __init__(self, size=0, initialData=None):
@@ -869,7 +878,53 @@ class Calculator:
             angle = 2 * 3.141592653589793 * k / n
             roots.append(Complex(math.cos(angle), math.sin(angle)))
         return roots
-    
+    def find_euler_totient(self, n):
+        '''Calculate Euler's totient function for a number n.'''
+        if n < 1:
+            raise ValueError("n must be a positive integer")
+        count = 0
+        for i in range(1, n + 1):
+            if self.gcd2(n, i) == 1:
+                count += 1
+        return count
+    def find_divisors(self, n):
+        '''Find all divisors of a number n.'''
+        if n < 1:
+            raise ValueError("n must be a positive integer")
+        divisors = []
+        for i in range(1, int(n**0.5) + 1):
+            if n % i == 0:
+                divisors.append(i)
+                if i != n // i:
+                    divisors.append(n // i)
+        return sorted(divisors)
+    def prime_sieve(self, limit):
+        '''Generate all prime numbers up to a given limit using the Sieve of Eratosthenes.'''
+        if limit < 2:
+            return []
+        sieve = [True] * (limit + 1)
+        sieve[0] = sieve[1] = False
+        for i in range(2, int(limit**0.5) + 1):
+            if sieve[i]:
+                for j in range(i * i, limit + 1, i):
+                    sieve[j] = False
+        return [i for i in range(limit + 1) if sieve[i]]
+    def prime_factorization(self, n):
+        '''Find the prime factorization of a number n.'''
+        if n < 2:
+            raise ValueError("n must be a positive integer greater than 1")
+        factors = []
+        for i in range(2, int(n**0.5) + 1):
+            while n % i == 0:
+                if i in factors:
+                    factors[i] += 1
+                else:
+                    factors[i] = 1
+                n //= i
+        if n > 1:
+            factors.append(n)
+        return factors
+
 
 
 
@@ -1016,6 +1071,3 @@ class Time:
         from datetime import datetime
         now = datetime.now()
         return Time(now.hour, now.minute, now.second)
-    
-    
-    
