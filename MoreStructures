@@ -5,7 +5,10 @@ check class Calculator - prime_factorization function to see if it works correct
 
 
 '''
-
+#import modules
+import numpy as np
+import math
+from scipy.optimize import linprog
 
 class Memory:
     '''some RAM, but able to dump to file for hard drive'''
@@ -278,7 +281,6 @@ class Calculator:
             raise ValueError("Logarithm is not defined for non-positive values")
         if base <= 1:
             raise ValueError("Base must be greater than 1")
-        import math
         return math.log(value, base)
     def gcd2(self, a, b):
         '''Calculate the greatest common divisor of two numbers.'''
@@ -350,133 +352,108 @@ class Calculator:
         return results
     def sin(self, angle):
         '''Calculate the sine of an angle in degrees.'''
-        import math
         return math.sin(math.radians(angle))
     def cos(self, angle):
         '''Calculate the cosine of an angle in degrees.'''
-        import math
         return math.cos(math.radians(angle))
     def tan(self, angle):
         '''Calculate the tangent of an angle in degrees.'''
-        import math
         return math.tan(math.radians(angle))
     def asin(self, value):
         '''Calculate the arcsine of a value.'''
-        import math
         if -1 <= value <= 1:
             return math.degrees(math.asin(value))
         else:
             raise ValueError("Value must be in the range [-1, 1]")
     def acos(self, value):
         '''Calculate the arccosine of a value.'''
-        import math
         if -1 <= value <= 1:
             return math.degrees(math.acos(value))
         else:
             raise ValueError("Value must be in the range [-1, 1]")
     def atan(self, value):
         '''Calculate the arctangent of a value.'''
-        import math
         return math.degrees(math.atan(value))
     def atan2(self, y, x):
         '''Calculate the arctangent of y/x, handling the quadrant correctly.'''
-        import math
         return math.degrees(math.atan2(y, x))
     def sec(self, angle):
         '''Calculate the secant of an angle in degrees.'''
-        import math
         if self.cos(angle) == 0:
             raise ValueError("Secant is undefined for angles where cosine is zero")
         return 1 / self.cos(angle)
     def csc(self, angle):
         '''Calculate the cosecant of an angle in degrees.'''
-        import math
         if self.sin(angle) == 0:
             raise ValueError("Cosecant is undefined for angles where sine is zero")
         return 1 / self.sin(angle)
     def cot(self, angle):
         '''Calculate the cotangent of an angle in degrees.'''
-        import math
         if self.tan(angle) == 0:
             raise ValueError("Cotangent is undefined for angles where tangent is zero")
         return 1 / self.tan(angle)
     def secant(self, angle):
         '''Calculate the secant of an angle in degrees.'''
-        import math
         if self.cos(angle) == 0:
             raise ValueError("Secant is undefined for angles where cosine is zero")
         return 1 / self.cos(angle)
     def cosecant(self, angle):
         '''Calculate the cosecant of an angle in degrees.'''
-        import math
         if self.sin(angle) == 0:
             raise ValueError("Cosecant is undefined for angles where sine is zero")
         return 1 / self.sin(angle)
     def cotangent(self, angle):
         '''Calculate the cotangent of an angle in degrees.'''
-        import math
         if self.tan(angle) == 0:
             raise ValueError("Cotangent is undefined for angles where tangent is zero")
         return 1 / self.tan(angle)
     def hyperbolic_sine(self, x):
         '''Calculate the hyperbolic sine of x.'''
-        import math
         return (math.exp(x) - math.exp(-x)) / 2
     def hyperbolic_cosine(self, x):
         '''Calculate the hyperbolic cosine of x.'''
-        import math
         return (math.exp(x) + math.exp(-x)) / 2
     def hyperbolic_tangent(self, x):
         '''Calculate the hyperbolic tangent of x.'''
-        import math
         return self.hyperbolic_sine(x) / self.hyperbolic_cosine(x)
     def hyperbolic_arcsine(self, x):
         '''Calculate the hyperbolic arcsine of x.'''
-        import math
         return math.log(x + math.sqrt(x**2 + 1))
     def hyperbolic_arccosine(self, x):
         '''Calculate the hyperbolic arccosine of x.'''
-        import math
         if x < 1:
             raise ValueError("Value must be greater than or equal to 1")
         return math.log(x + math.sqrt(x**2 - 1))
     def hyperbolic_arctangent(self, x):
         '''Calculate the hyperbolic arctangent of x.'''
-        import math
         if abs(x) >= 1:
             raise ValueError("Value must be in the range (-1, 1)")
         return 0.5 * math.log((1 + x) / (1 - x))
     def hyperbolic_arccosecant(self, x):
         '''Calculate the hyperbolic arccosecant of x.'''
-        import math
         if abs(x) < 1:
             raise ValueError("Value must be greater than or equal to 1 or less than or equal to -1")
         return math.log(math.sqrt(x**2 + 1) + x)
     def hyperbolic_arcsecant(self, x):
         '''Calculate the hyperbolic arcsecant of x.'''
-        import math
         if abs(x) < 1:
             raise ValueError("Value must be greater than or equal to 1 or less than or equal to -1")
         return math.log(math.sqrt(x**2 - 1) + x)
     def hyperbolic_arccotangent(self, x):
         '''Calculate the hyperbolic arccotangent of x.'''
-        import math
         if x == 0:
             raise ValueError("Value cannot be zero")
         return 0.5 * math.log((x + 1) / (x - 1))
     def hyperbolic_secant(self, x):
         '''Calculate the hyperbolic secant of x.'''
-        import math
         return 2 / (math.exp(x) + math.exp(-x))
     def hyperbolic_cosecant(self, x):
         '''Calculate the hyperbolic cosecant of x.'''
-        import math
         if self.hyperbolic_sine(x) == 0:
             raise ValueError("Hyperbolic cosecant is undefined for x where hyperbolic sine is zero")
         return 2 / (math.exp(x) - math.exp(-x))
     def hyperbolic_cotangent(self, x):
         '''Calculate the hyperbolic cotangent of x.'''
-        import math
         if self.hyperbolic_sine(x) == 0:
             raise ValueError("Hyperbolic cotangent is undefined for x where hyperbolic sine is zero")
         return self.hyperbolic_cosine(x) / self.hyperbolic_sine(x)
@@ -696,7 +673,6 @@ class Calculator:
         return -b / a
     def solve_system_of_equations(self, equations):
         '''Solve a system of linear equations using matrix methods.'''
-        import numpy as np
         A = np.array([[eq[0] for eq in equations], [eq[1] for eq in equations]])
         b = np.array([eq[2] for eq in equations])
         try:
@@ -705,7 +681,6 @@ class Calculator:
             return "No unique solution exists"
     def solve_polynomial(self, coefficients):
         '''Solve a polynomial equation with given coefficients.'''
-        import numpy as np
         return np.roots(coefficients)
     def solve_differential_equation(self, func, y0, t0, t1, n=1000):
         '''Solve a first-order differential equation using Euler's method.'''
@@ -737,7 +712,6 @@ class Calculator:
         return results
     def solve_pde(self, func, x0, x1, y0, y1, n=100, m=100):
         '''Solve a partial differential equation using finite difference method.'''
-        import numpy as np
         x = np.linspace(x0, x1, n)
         y = np.linspace(y0, y1, m)
         dx = (x1 - x0) / (n - 1)
@@ -758,7 +732,6 @@ class Calculator:
         return grid
     def solve_linear_programming(self, c, A, b):
         '''Solve a linear programming problem using the simplex method.'''
-        from scipy.optimize import linprog
         res = linprog(c, A_ub=A, b_ub=b)
         if res.success:
             return res.x, res.fun
@@ -859,15 +832,12 @@ class Calculator:
             return 0
     def floor(self, a):
         '''Calculate the floor of a number.'''
-        import math
         return math.floor(a)
     def ceil(self, a):
         '''Calculate the ceiling of a number.'''
-        import math
         return math.ceil(a)
     def round(self, a, ndigits=0):
         '''Round a number to a specified number of decimal places.'''
-        import math
         return round(a, ndigits)
     def find_roots_of_unity(self, n):
         '''Find the nth roots of unity.'''
