@@ -913,18 +913,21 @@ class Calculator:
         '''Find the prime factorization of a number n.'''
         if n < 2:
             raise ValueError("n must be a positive integer greater than 1")
-        factors = []
+        prime_factors = []
+        powers = []
         for i in range(2, int(n**0.5) + 1):
-            while n % i == 0:
-                if i in factors:
-                    factors[i] += 1
-                else:
-                    factors[i] = 1
-                n //= i
-        if n > 1:
-            factors.append(n)
-        return factors
-
+            if n % i == 0:
+                count = 0
+                while n % i == 0:
+                    n //= i
+                    count += 1
+                prime_factors.append(i)
+                powers.append(count)
+        if n > 1 and len(prime_factors) == 0:
+            prime_factors.append(n)
+            powers.append(1)
+        return dict(zip(prime_factors, powers))
+    
 
 
 
