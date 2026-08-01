@@ -1,45 +1,58 @@
-saveCode = ""
-dev_idx = 0
+"""Utilities for serializing sequences of strings with escaping."""
 
-def dev_WriteVal(text,delim,escape):
-    for i in range(len(text)):
-        c = text[i]
-        if c == delim or c == escape:
-            saveCode += escape
-        saveCode += c
-    saveCode += delim
 
-def dev_ReadVal(delim, escape):
-    value = ""
-    while True:
-        c = saveCode[dev_idx]
-        dev_idx += 1
-        if c == delim:
-            break
-        if c == "":
-            return False
-        if c == escape:
-            c = saveCode[dev_idx]
-            dev_idx += 1
-        value += c
-    return value
+def _validate_characters(delim, escape):
+    if not isinstance(delim, str) or len(delim) != 1:
+        raise ValueError("Delimiter must be a single character")
+    if not isinstance(escape, str) or len(escape) != 1:
+        raise ValueError("Escape must be a single character")
+    if delim == escape:
+        raise ValueError("Delimiter and escape characters must be different")
 
-def Encode(list,delim="|", escape="\\"):
-    saveCode = ""
-    for i in range(len(list)):
-        dev_WriteVal(list[i], delim, escape)
-    return saveCode
 
-def Decode(text,delim="|", escape="\\"):
-    saveCode = text
-    dev_idx = 0
-    return_list = []
-    while True:
-        readval = dev_ReadVal(delim, escape)
-        if readval == None:
-            break
-        return_list.append(dev_ReadVal(delim, escape))
+def Encode(values, delim="|", escape="\\"):
+    """Encode an iterable of values into a delimiter-separated string."""
+    _validate_characters(delim, escape)
+    encoded_values = []
+    for value in values:
+        text = str(value)
+        text = text.replace(escape, escape + escape)
+        text = text.replace(delim, escape + delim)
+        encoded_values.append(text + delim)
+    return "".join(encoded_values)
 
-    return return_list
+
+def Decode(text, delim="|", escape="\\"):
+    """Decode a string produced by :func:`Encode`."""
+    _validate_characters(delim, escape)
+    if not isinstance(text, str):
+        raise TypeError("Encoded data must be a string")
+    if not text:
+        return []
+
+    values = []
+    current = []
+    escaped = False
+    for character in text:
+        if escaped:
+            current.append(character)
+            escaped = False
+        elif character == escape:
+            escaped = True
+        elif character == delim:
+            values.append("".join(current))
+            current = []
+        else:
+            current.append(character)
+
+    if escaped:
+        raise ValueError("Encoded data ends with an incomplete escape sequence")
+    if current:
+        raise ValueError("Encoded data is missing its final delimiter")
+    return values
+
+
+encode = Encode
+decode = Decode
 
 

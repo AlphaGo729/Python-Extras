@@ -1,21 +1,26 @@
-'''
-Note to self...
-check class Calculator - prime_factorization function to see if it works correctly.
+'''Additional data structures and mathematical utilities.'''
 
-
-
-'''
-#import modules
-import numpy as np
+import json
 import math
+
+import numpy as np
 from scipy.optimize import linprog
 
 class Memory:
     '''some RAM, but able to dump to file for hard drive'''
     def __init__(self, size=0, initialData=None):
         '''Initialize memory with a given size and optional initial data.'''
-        self.size = size
-        self.data = initialData if initialData is not None else [0] * size
+        if not isinstance(size, int) or size < 0:
+            raise ValueError("Memory size must be a non-negative integer")
+        if initialData is None:
+            self.size = size
+            self.data = [0] * size
+        else:
+            data = list(initialData)
+            if size not in (0, len(data)):
+                raise ValueError("Memory size must match the initial data length")
+            self.size = len(data)
+            self.data = data
 
     def read(self, address):
         '''Read a value from the specified address in memory.'''
@@ -32,17 +37,16 @@ class Memory:
     def filedump(self, filename):
         '''Dump the memory contents to a file.'''
         with open(filename, 'w') as f:
-            f.write(self.size)
-            for i in range(self.size):
-                f.write(f"{i}: {self.data[i]}\n")
+            json.dump(self.data, f)
 
     def fileload(self, filename):
         '''Load memory contents from a file.'''
         with open(filename, 'r') as f:
-            self.size = int(f.readline().strip())
-            for line in f:
-                index, value = line.split(': ')
-                self.data[int(index)] = int(value.strip())
+            data = json.load(f)
+        if not isinstance(data, list):
+            raise ValueError("Memory file must contain a list")
+        self.data = data
+        self.size = len(data)
     
 
 
@@ -154,11 +158,19 @@ class Vector:
     def __truediv__(self, scalar):
         return Vector([c / scalar for c in self.coord])
     def __repr__(self):
-        return self.coord
+        return f"Vector({self.coord!r})"
     def dot(self, other):
         if self.numcoord != other.numcoord:
             raise ValueError("Vectors must have the same number of dimensions")
         return sum(self.coord[i] * other.coord[i] for i in range(self.numcoord))
+    def asVector2D(self):
+        if self.numcoord != 2:
+            raise ValueError("Vector must have exactly 2 dimensions to convert to Vector2D")
+        return Vector2D(self.coord[0], self.coord[1])
+    def asVector3D(self):
+        if self.numcoord != 3:
+            raise ValueError("Vector must have exactly 3 dimensions to convert to Vector3D")
+        return Vector3D(self.coord[0], self.coord[1], self.coord[2])
     
 
 class Matrix:
@@ -329,13 +341,13 @@ class Calculator:
             factors.append(n)
         return factors
     def fibonacci(self, n):
-        '''Generate Fibonacci sequence up to n terms.'''
-        if n <= 0:
-            return []
-        fib_sequence = [0, 1]
-        while len(fib_sequence) < n:
-            fib_sequence.append(fib_sequence[-1] + fib_sequence[-2])
-        return fib_sequence[n]
+        '''Return the nth Fibonacci number, where fibonacci(0) is 0.'''
+        if not isinstance(n, int) or n < 0:
+            raise ValueError("n must be a non-negative integer")
+        current, following = 0, 1
+        for _ in range(n):
+            current, following = following, current + following
+        return current
     def recurrence(self, n, base_cases, recurrence_func_str):
         memo = dict(base_cases)
         results = []
@@ -515,15 +527,16 @@ class Calculator:
         return divisors_sum == n
     def is_perfect_power(self, n,power=2):
         '''Check if a number is a perfect power.'''
-        if n < 1:
+        if not isinstance(power, int) or power < 2:
+            raise ValueError("Power must be an integer greater than 1")
+        if n < 0 and power % 2 == 0:
             return False
-        for base in range(2, int(n**0.5) + 1):
-            power = 2
-            while base ** power <= n:
-                if base ** power == n:
-                    return True
-                power += 1
-        return False
+        if n in (0, 1):
+            return True
+        magnitude = abs(n)
+        approximate_root = round(magnitude ** (1 / power))
+        candidates = range(max(0, approximate_root - 1), approximate_root + 2)
+        return any(base ** power == magnitude for base in candidates)
     def is_armstrong(self, n):
         '''Check if a number is an Armstrong number.'''
         digits = str(n)
@@ -673,10 +686,12 @@ class Calculator:
         return -b / a
     def solve_system_of_equations(self, equations):
         '''Solve a system of linear equations using matrix methods.'''
-        A = np.array([[eq[0] for eq in equations], [eq[1] for eq in equations]])
-        b = np.array([eq[2] for eq in equations])
+        if not equations or any(len(equation) != len(equations) + 1 for equation in equations):
+            raise ValueError("Provide n equations containing n coefficients and one constant")
+        coefficients = np.array([equation[:-1] for equation in equations], dtype=float)
+        constants = np.array([equation[-1] for equation in equations], dtype=float)
         try:
-            return np.linalg.solve(A, b)
+            return np.linalg.solve(coefficients, constants)
         except np.linalg.LinAlgError:
             return "No unique solution exists"
     def solve_polynomial(self, coefficients):
@@ -771,8 +786,8 @@ class Calculator:
             return x0, y0
     def base_conv(self,number,base1,base2):
         '''Convert a number from base1 to base2.'''
-        if base1 < 2 or base2 < 2:
-            raise ValueError("Base must be at least 2")
+        if not 2 <= base1 <= 36 or not 2 <= base2 <= 36:
+            raise ValueError("Bases must be between 2 and 36")
         if isinstance(number, str):
             number = int(number, base1)
         elif not isinstance(number, int):
@@ -783,9 +798,10 @@ class Calculator:
         if number == 0:
             return '0'
         
+        alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         digits = []
         while number > 0:
-            digits.append(str(number % base2))
+            digits.append(alphabet[number % base2])
             number //= base2
         return ''.join(digits[::-1])
     
@@ -893,7 +909,7 @@ class Calculator:
                     count += 1
                 prime_factors.append(i)
                 powers.append(count)
-        if n > 1 and len(prime_factors) == 0:
+        if n > 1:
             prime_factors.append(n)
             powers.append(1)
         return dict(zip(prime_factors, powers))
