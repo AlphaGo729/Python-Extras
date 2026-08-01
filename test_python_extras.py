@@ -2,30 +2,30 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import Serialization
-from MoreStructures import Calculator, Complex, Matrix, Memory, Time, Vector, Vector2D, Vector3D
+import PythonExtras
+from PythonExtras import Calculator, Complex, Matrix, Memory, Time, Vector, Vector2D, Vector3D
 
 
 class SerializationTests(unittest.TestCase):
     def test_round_trip_preserves_delimiters_escapes_and_empty_values(self):
         values = ["plain", "a|b", r"c\d", ""]
 
-        encoded = Serialization.Encode(values)
+        encoded = PythonExtras.Encode(values)
 
-        self.assertEqual(Serialization.Decode(encoded), values)
+        self.assertEqual(PythonExtras.Decode(encoded), values)
 
     def test_custom_characters_and_lowercase_aliases(self):
         values = ["one;two", "three!four"]
 
-        encoded = Serialization.encode(values, delim=";", escape="!")
+        encoded = PythonExtras.encode(values, delim=";", escape="!")
 
-        self.assertEqual(Serialization.decode(encoded, delim=";", escape="!"), values)
+        self.assertEqual(PythonExtras.decode(encoded, delim=";", escape="!"), values)
 
     def test_decode_rejects_incomplete_data(self):
+        with self.assertRaises(ValueError): 
+            PythonExtras.Decode("value")
         with self.assertRaises(ValueError):
-            Serialization.Decode("value")
-        with self.assertRaises(ValueError):
-            Serialization.Decode("value\\")
+            PythonExtras.Decode("value\\")
 
 
 class MemoryTests(unittest.TestCase):

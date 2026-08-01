@@ -1,8 +1,9 @@
 # Python Extras
 
-Python Extras is a small collection of standalone Python modules for data
-structures, mathematical operations, and escaped-string serialization. The
-files can be used together or copied individually into another Python project.
+Python Extras is a single-file Python library for data structures,
+mathematical operations, and escaped-string serialization. Install
+`PythonExtras.py` into Python's site-packages directory to import it from any
+working directory.
 
 ## Features
 
@@ -13,16 +14,14 @@ files can be used together or copied individually into another Python project.
 	numerical helpers through `Calculator`
 - Complex-number and time value types
 - Delimiter-based string serialization with delimiter and escape preservation
-- No runtime dependency for `Serialization.py`
 
-`MoreStructures.py` uses NumPy and SciPy for numerical operations. See
+`PythonExtras.py` uses NumPy and SciPy for numerical operations. See
 [INSTALLATION.md](INSTALLATION.md) for complete manual installation steps.
 
 ## Quick Start
 
 ```python
-from MoreStructures import Calculator, Matrix, Vector
-from Serialization import decode, encode
+from PythonExtras import Calculator, Matrix, Vector, decode, encode
 
 calculator = Calculator()
 print(calculator.prime_factorization(360))
@@ -39,9 +38,7 @@ print(decode(encoded))
 # ['first', 'contains|delimiter', 'contains\\escape', '']
 ```
 
-## Modules
-
-### MoreStructures
+## Library Contents
 
 | Class | Purpose |
 | --- | --- |
@@ -56,7 +53,7 @@ print(decode(encoded))
 | `Complex` | Complex arithmetic, conjugates, and modulus |
 | `Time` | Normalized time arithmetic and unit/string conversions |
 
-### Serialization
+### Serialization Functions
 
 `Encode(values, delim="|", escape="\\")` converts an iterable of values into
 one escaped string. `Decode(text, delim="|", escape="\\")` restores the list
@@ -71,7 +68,7 @@ final delimiter.
 ### Memory Persistence
 
 ```python
-from MoreStructures import Memory
+from PythonExtras import Memory
 
 memory = Memory(initialData=[10, "ready", True])
 memory.write(0, 20)
@@ -86,7 +83,7 @@ print(restored.data)
 ### Matrix Operations
 
 ```python
-from MoreStructures import Matrix
+from PythonExtras import Matrix
 
 matrix = Matrix([[4, 7], [2, 6]])
 print(matrix.determinant())
@@ -109,11 +106,10 @@ calculator helpers, complex arithmetic, and time conversion.
 
 | File | Description |
 | --- | --- |
-| `MoreStructures.py` | Data structures and mathematical utilities |
-| `Serialization.py` | Escaped delimiter-based serialization |
+| `PythonExtras.py` | Complete library: structures, math, and serialization |
 | `test_python_extras.py` | Automated unit tests |
 | `requirements.txt` | NumPy and SciPy dependencies |
-| `INSTALLATION.md` | Manual installation and removal instructions |
+| `INSTALLATION.md` | User-wide and system-wide installation instructions |
 
 ## Security Note
 
