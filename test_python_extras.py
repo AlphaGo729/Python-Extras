@@ -1,9 +1,11 @@
 import tempfile
+import tkinter as tk
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import PythonExtras
-from PythonExtras import Calculator, Complex, Matrix, Memory, Time, Vector, Vector2D, Vector3D
+from PythonExtras import Calculator, Complex, GUIApp, GUIForm, Matrix, Memory, Time, Vector, Vector2D, Vector3D
 
 
 class SerializationTests(unittest.TestCase):
@@ -119,6 +121,72 @@ class ValueTypeTests(unittest.TestCase):
         self.assertEqual(str(time), "02:00:30")
         self.assertEqual(Time.from_seconds(3661).to_string(), "01:01:01")
         self.assertEqual((Time(1) + Time(minutes=30)).to_minutes(), 90)
+
+
+class GUIWrapperTests(unittest.TestCase):
+    def test_gui_app_configures_injected_root(self):
+        root = mock.Mock()
+        root.winfo_width.return_value = 640
+        root.winfo_height.return_value = 480
+        root.winfo_screenwidth.return_value = 1920
+        root.winfo_screenheight.return_value = 1080
+        style = mock.Mock()
+        style.theme_names.return_value = ("default", "clam")
+        content = mock.Mock()
+
+        with mock.patch.object(PythonExtras.ttk, "Style", return_value=style), \
+                mock.patch.object(PythonExtras.ttk, "Frame", return_value=content):
+            app = GUIApp(
+                title="Example",
+                size=(640, 480),
+                min_size=(320, 240),
+                resizable=(True, False),
+                theme="clam",
+                root=root,
+            )
+            app.center()
+
+        root.title.assert_called_once_with("Example")
+        root.minsize.assert_called_once_with(320, 240)
+        root.resizable.assert_called_once_with(True, False)
+        style.theme_use.assert_called_once_with("clam")
+        root.geometry.assert_called_with("640x480+640+300")
+
+    def test_gui_app_rejects_invalid_sizes(self):
+        for size in ((0, 100), (100,), ("100", 100)):
+            with self.subTest(size=size), self.assertRaises(ValueError):
+                GUIApp._validate_size(size, "size")
+
+    def test_gui_form_collects_and_validates_values(self):
+        interpreter = tk.Tcl()
+        form = GUIForm.__new__(GUIForm)
+        form.fields = {
+            "name": {
+                "variable": tk.StringVar(interpreter, "Ada"),
+                "required": True,
+                "validator": None,
+            },
+            "age": {
+                "variable": tk.StringVar(interpreter, "36"),
+                "required": True,
+                "validator": lambda value: value.isdigit() or "age must be numeric",
+            },
+            "active": {
+                "variable": tk.BooleanVar(interpreter, True),
+                "required": False,
+                "validator": None,
+            },
+        }
+
+        self.assertEqual(form.get_values(), {"name": "Ada", "age": "36", "active": True})
+        form.set_values(name="Grace", age="invalid")
+        with self.assertRaisesRegex(ValueError, "age must be numeric"):
+            form.get_values()
+        with self.assertRaises(KeyError):
+            form.set_values(unknown="value")
+
+    def test_import_does_not_create_tk_root(self):
+        self.assertIsNone(tk._default_root)
 
 
 if __name__ == "__main__":

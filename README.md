@@ -11,9 +11,10 @@ working directory.
 - Two-dimensional, three-dimensional, and arbitrary-dimensional vectors
 - Matrix arithmetic, transposition, determinants, inverses, and vector scaling
 - Arithmetic, number theory, trigonometry, calculus, equation solving, and
-	numerical helpers through `Calculator`
+  numerical helpers through `Calculator`
 - Complex-number and time value types
 - Delimiter-based string serialization with delimiter and escape preservation
+- Tkinter wrappers for applications, forms, scrolling, toolbars, and status bars
 
 `PythonExtras.py` uses NumPy and SciPy for numerical operations. See
 [INSTALLATION.md](INSTALLATION.md) for complete manual installation steps.
@@ -52,6 +53,11 @@ print(decode(encoded))
 | `Calculator` | General arithmetic, number theory, numerical methods, and solvers |
 | `Complex` | Complex arithmetic, conjugates, and modulus |
 | `Time` | Normalized time arithmetic and unit/string conversions |
+| `GUIApp` | Window setup, themes, shortcuts, scheduling, centering, and lifecycle |
+| `GUIForm` | Named entry, password, checkbox, and select fields with validation |
+| `ScrollableFrame` | A vertically scrollable content container |
+| `Toolbar` | Horizontal button, separator, and spacer layout |
+| `StatusBar` | Status messages with optional automatic clearing |
 
 ### Serialization Functions
 
@@ -62,6 +68,56 @@ of strings. Lowercase `encode` and `decode` aliases are also available.
 The delimiter and escape marker must each be one character and must be
 different. `Decode` rejects truncated escape sequences and input without a
 final delimiter.
+
+### GUI Wrappers
+
+The GUI classes wrap standard Tkinter and themed `ttk` widgets. Importing
+Python Extras does not create a window; the first window is created only when
+`GUIApp` is instantiated.
+
+```python
+from PythonExtras import GUIApp, GUIForm, StatusBar, Toolbar
+
+app = GUIApp("Account", size=(520, 320), min_size=(420, 260), theme="clam")
+app.content.rowconfigure(1, weight=1)
+app.content.columnconfigure(0, weight=1)
+
+toolbar = Toolbar(app.content)
+toolbar.grid(row=0, column=0, sticky="ew")
+
+form = GUIForm(app.content, padding=16)
+form.grid(row=1, column=0, sticky="nsew")
+form.add_entry("name", "Name", required=True)
+form.add_password("password", "Password", required=True)
+form.add_select("role", ["Reader", "Editor", "Owner"], "Role")
+form.add_checkbox("notifications", "Email notifications", default=True)
+
+status = StatusBar(app.content)
+status.grid(row=2, column=0, sticky="ew")
+
+def submit():
+	try:
+		values = form.get_values()
+		status.set(f"Saved {values['name']}", clear_after=3000)
+	except ValueError as error:
+		status.set(str(error))
+
+toolbar.add_button("Save", submit)
+toolbar.add_spacer()
+toolbar.add_button("Close", app.close)
+app.bind_shortcut("<Control-s>", lambda _event: submit())
+app.run()
+```
+
+For long content, place widgets inside `ScrollableFrame.content`:
+
+```python
+from PythonExtras import ScrollableFrame
+
+panel = ScrollableFrame(app.content, padding=12, height=300)
+panel.grid(row=1, column=0, sticky="nsew")
+# Add child widgets with panel.content as their parent.
+```
 
 ## More Examples
 
@@ -100,7 +156,8 @@ python3 -m unittest -v
 ```
 
 The suite covers serialization, memory persistence, vectors, matrices,
-calculator helpers, complex arithmetic, and time conversion.
+calculator helpers, complex arithmetic, time conversion, and headless GUI
+wrapper behavior.
 
 ## Project Files
 

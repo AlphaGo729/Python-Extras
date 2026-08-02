@@ -17,15 +17,19 @@ PythonExtras` is not available. The module itself must be copied manually.
 - `pip`
 - NumPy
 - SciPy
+- Tkinter 8.6 or newer for the GUI wrappers
 
 Check that Python and pip are available:
 
 ```bash
 python3 --version
 python3 -m pip --version
+python3 -c "import tkinter; print(tkinter.TkVersion)"
 ```
 
 On Windows, use `py` instead of `python3` if that is how Python is installed.
+Tkinter is included with most Python installers for macOS and Windows. On
+Linux, it may be a separate operating-system package such as `python3-tk`.
 
 ## 1. Download the Files
 
@@ -239,6 +243,33 @@ python3 -m pip install --user -r requirements.txt
 
 Using `python3 -m pip` ensures packages are installed for the selected Python
 interpreter instead of a different system installation.
+
+### `ModuleNotFoundError: No module named 'tkinter'`
+
+Tkinter cannot be installed from `requirements.txt`. Install the Tk package
+provided for your Python distribution. Common Linux examples are:
+
+```bash
+# Debian or Ubuntu
+sudo apt install python3-tk
+
+# Fedora
+sudo dnf install python3-tkinter
+```
+
+On macOS or Windows, reinstall Python from <https://www.python.org/downloads/>
+and ensure the optional Tcl/Tk components are included. Verify the result with:
+
+```bash
+python3 -c "import tkinter; print(tkinter.TkVersion)"
+```
+
+### A GUI Cannot Open in a Headless Environment
+
+Importing `PythonExtras` works without opening a window, but constructing
+`GUIApp` requires a graphical display. Run GUI applications in a desktop
+session. Server and CI environments should test display-independent logic or
+use an appropriate virtual display.
 
 ### PowerShell Blocks Virtual Environment Activation
 

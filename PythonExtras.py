@@ -2,6 +2,8 @@
 
 import json
 import math
+import tkinter as tk
+from tkinter import ttk
 
 import numpy as np
 from scipy.optimize import linprog
@@ -1144,3 +1146,258 @@ class Time:
         from datetime import datetime
         now = datetime.now()
         return Time(now.hour, now.minute, now.second)
+
+
+class GUIApp:
+    '''A convenient wrapper around a Tkinter application window.'''
+    def __init__(self, title="Python Extras", size=(800, 600), min_size=None,
+                 resizable=(True, True), theme=None, padding=12, root=None):
+        self.root = root if root is not None else tk.Tk()
+        self.style = ttk.Style(self.root)
+        self.root.title(title)
+
+        width, height = self._validate_size(size, "size")
+        self.root.geometry(f"{width}x{height}")
+        if min_size is not None:
+            min_width, min_height = self._validate_size(min_size, "min_size")
+            self.root.minsize(min_width, min_height)
+
+        if not isinstance(resizable, (tuple, list)) or len(resizable) != 2:
+            raise ValueError("resizable must contain width and height booleans")
+        self.root.resizable(bool(resizable[0]), bool(resizable[1]))
+
+        if theme is not None:
+            if theme not in self.style.theme_names():
+                raise ValueError(f"Unknown Tkinter theme: {theme}")
+            self.style.theme_use(theme)
+
+        self.content = ttk.Frame(self.root, padding=padding)
+        self.content.grid(row=0, column=0, sticky="nsew")
+        self.root.rowconfigure(0, weight=1)
+        self.root.columnconfigure(0, weight=1)
+
+    @staticmethod
+    def _validate_size(size, name):
+        if not isinstance(size, (tuple, list)) or len(size) != 2:
+            raise ValueError(f"{name} must contain a width and height")
+        width, height = size
+        if not isinstance(width, int) or not isinstance(height, int) or width <= 0 or height <= 0:
+            raise ValueError(f"{name} values must be positive integers")
+        return width, height
+
+    def center(self):
+        '''Center the application window on the current screen.'''
+        self.root.update_idletasks()
+        width = self.root.winfo_width()
+        height = self.root.winfo_height()
+        x = max(0, (self.root.winfo_screenwidth() - width) // 2)
+        y = max(0, (self.root.winfo_screenheight() - height) // 2)
+        self.root.geometry(f"{width}x{height}+{x}+{y}")
+        return self
+
+    def bind_shortcut(self, sequence, callback):
+        '''Bind a keyboard shortcut and return the application for chaining.'''
+        self.root.bind(sequence, callback)
+        return self
+
+    def call_later(self, milliseconds, callback, *args):
+        '''Schedule a callback and return its Tkinter identifier.'''
+        return self.root.after(milliseconds, callback, *args)
+
+    def run(self, centered=True):
+        '''Start the Tkinter event loop.'''
+        if centered:
+            self.center()
+        self.root.mainloop()
+
+    def close(self):
+        '''Close the application window.'''
+        self.root.destroy()
+
+
+class GUIForm(ttk.Frame):
+    '''A grid-based form that collects and validates named fields.'''
+    def __init__(self, parent, *, padding=0, label_width=None, **kwargs):
+        super().__init__(parent, padding=padding, **kwargs)
+        self.fields = {}
+        self._next_row = 0
+        self._label_width = label_width
+        self.columnconfigure(1, weight=1)
+
+    def _add_field(self, name, label, variable, widget, required, validator):
+        if not isinstance(name, str) or not name:
+            raise ValueError("Field name must be a non-empty string")
+        if name in self.fields:
+            raise ValueError(f"A field named {name!r} already exists")
+
+        label_options = {"text": label}
+        if self._label_width is not None:
+            label_options["width"] = self._label_width
+        field_label = ttk.Label(self, **label_options)
+        field_label.grid(row=self._next_row, column=0, padx=(0, 8), pady=4, sticky="w")
+        widget.grid(row=self._next_row, column=1, pady=4, sticky="ew")
+        self.fields[name] = {
+            "label": field_label,
+            "variable": variable,
+            "widget": widget,
+            "required": required,
+            "validator": validator,
+        }
+        self._next_row += 1
+        return widget
+
+    def add_entry(self, name, label=None, default="", required=False,
+                  validator=None, **kwargs):
+        '''Add a text entry and return its ttk.Entry widget.'''
+        variable = tk.StringVar(master=self, value=default)
+        widget = ttk.Entry(self, textvariable=variable, **kwargs)
+        return self._add_field(name, label or name, variable, widget, required, validator)
+
+    def add_password(self, name, label=None, default="", required=False,
+                     validator=None, **kwargs):
+        '''Add a masked text entry.'''
+        kwargs.setdefault("show", "*")
+        return self.add_entry(name, label, default, required, validator, **kwargs)
+
+    def add_checkbox(self, name, label=None, default=False, validator=None,
+                     **kwargs):
+        '''Add a boolean checkbox and return its ttk.Checkbutton widget.'''
+        variable = tk.BooleanVar(master=self, value=default)
+        widget = ttk.Checkbutton(self, variable=variable, **kwargs)
+        return self._add_field(name, label or name, variable, widget, False, validator)
+
+    def add_select(self, name, values, label=None, default=None, required=False,
+                   validator=None, readonly=True, **kwargs):
+        '''Add a combobox containing the supplied values.'''
+        options = list(values)
+        initial_value = options[0] if default is None and options else default
+        variable = tk.StringVar(master=self, value="" if initial_value is None else initial_value)
+        if readonly:
+            kwargs.setdefault("state", "readonly")
+        widget = ttk.Combobox(self, textvariable=variable, values=options, **kwargs)
+        return self._add_field(name, label or name, variable, widget, required, validator)
+
+    def get_values(self, validate=True):
+        '''Return field values, optionally raising ValueError for invalid fields.'''
+        values = {name: field["variable"].get() for name, field in self.fields.items()}
+        if not validate:
+            return values
+
+        errors = []
+        for name, field in self.fields.items():
+            value = values[name]
+            if field["required"] and (value is None or str(value).strip() == ""):
+                errors.append(f"{name} is required")
+                continue
+            validator = field["validator"]
+            if validator is not None:
+                result = validator(value)
+                if result is False:
+                    errors.append(f"{name} is invalid")
+                elif isinstance(result, str) and result:
+                    errors.append(result)
+        if errors:
+            raise ValueError("; ".join(errors))
+        return values
+
+    def set_values(self, **values):
+        '''Set one or more fields by name.'''
+        unknown = set(values) - set(self.fields)
+        if unknown:
+            raise KeyError(f"Unknown form fields: {', '.join(sorted(unknown))}")
+        for name, value in values.items():
+            self.fields[name]["variable"].set(value)
+        return self
+
+    def clear(self):
+        '''Reset text/select fields to empty strings and checkboxes to False.'''
+        for field in self.fields.values():
+            variable = field["variable"]
+            variable.set(False if isinstance(variable, tk.BooleanVar) else "")
+        return self
+
+
+class ScrollableFrame(ttk.Frame):
+    '''A vertically scrollable frame with an inner content frame.'''
+    def __init__(self, parent, *, padding=0, height=None, **kwargs):
+        super().__init__(parent, **kwargs)
+        self.canvas = tk.Canvas(self, highlightthickness=0, height=height)
+        self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.content = ttk.Frame(self.canvas, padding=padding)
+        self._content_window = self.canvas.create_window((0, 0), window=self.content, anchor="nw")
+
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+        self.canvas.grid(row=0, column=0, sticky="nsew")
+        self.scrollbar.grid(row=0, column=1, sticky="ns")
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.content.bind("<Configure>", self._resize_scroll_region)
+        self.canvas.bind("<Configure>", self._resize_content)
+
+    def _resize_scroll_region(self, _event=None):
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def _resize_content(self, event):
+        self.canvas.itemconfigure(self._content_window, width=event.width)
+
+    def scroll_to_top(self):
+        '''Scroll to the beginning of the content.'''
+        self.canvas.yview_moveto(0)
+
+    def scroll_to_bottom(self):
+        '''Scroll to the end of the content.'''
+        self.canvas.yview_moveto(1)
+
+
+class Toolbar(ttk.Frame):
+    '''A horizontal toolbar with convenient button and separator creation.'''
+    def __init__(self, parent, *, padding=4, **kwargs):
+        super().__init__(parent, padding=padding, **kwargs)
+        self._next_column = 0
+
+    def add_button(self, text, command, **kwargs):
+        '''Add and return a toolbar button.'''
+        button = ttk.Button(self, text=text, command=command, **kwargs)
+        button.grid(row=0, column=self._next_column, padx=2)
+        self._next_column += 1
+        return button
+
+    def add_separator(self, **kwargs):
+        '''Add and return a vertical separator.'''
+        separator = ttk.Separator(self, orient="vertical", **kwargs)
+        separator.grid(row=0, column=self._next_column, padx=6, sticky="ns")
+        self._next_column += 1
+        return separator
+
+    def add_spacer(self):
+        '''Add an expanding column that pushes later controls to the right.'''
+        self.columnconfigure(self._next_column, weight=1)
+        self._next_column += 1
+        return self
+
+
+class StatusBar(ttk.Frame):
+    '''A status bar with optional automatic message clearing.'''
+    def __init__(self, parent, text="Ready", *, padding=(8, 4), **kwargs):
+        super().__init__(parent, padding=padding, **kwargs)
+        self.variable = tk.StringVar(master=self, value=text)
+        self.label = ttk.Label(self, textvariable=self.variable, anchor="w")
+        self.label.pack(fill="x", expand=True)
+        self._clear_job = None
+
+    def set(self, text, clear_after=None):
+        '''Set the message and optionally clear it after milliseconds.'''
+        if self._clear_job is not None:
+            self.after_cancel(self._clear_job)
+            self._clear_job = None
+        self.variable.set(text)
+        if clear_after is not None:
+            if not isinstance(clear_after, int) or clear_after < 0:
+                raise ValueError("clear_after must be a non-negative integer")
+            self._clear_job = self.after(clear_after, self.clear)
+        return self
+
+    def clear(self):
+        '''Clear the current status message.'''
+        self.variable.set("")
+        self._clear_job = None
